@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.bootcss.com/vue/2.6.11/vue.js"></script>
+  <script src="https://cdn.bootcss.com/axios/0.19.2/axios.min.js"></script>
+</head>
+<body>
+  <div id="app"> 
+    <button @click="getToken">登录获取token</button>
+    <button @click="checkToken">验证token</button>
+  </div>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data () {
+        return {
+          title: 'title',
+          token: ''
+        }
+      },
+      methods: {
+        getToken () {
+          axios.post('http://localhost:3000/users/login', {
+            username: 'admin',
+            password: '123'
+          }).then((res) => {
+            console.log(res);
+            this.token = res.data.token
+          })
+        },
+        checkToken () {
+          axios.get('http://localhost:3000/users/check', { headers: {token: this.token} }).then(res => {
+            console.log(res);
+          })
+        }
+      }
+    })
+  </script>
+</body>
+</html>
