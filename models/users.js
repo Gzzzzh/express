@@ -3,7 +3,8 @@ const Schema = mongoose.Schema
 
 const UserSchema = new Schema({
   openId: {
-    type: String
+    type: String,
+    unique: true
   },
   phone: {
     type: String
@@ -17,9 +18,23 @@ const UserSchema = new Schema({
   avatarUrl: {
     type: String
   },
+  birthday: {
+    type: String,
+    default: '2020-01-01'
+  },
+  photos: {
+    type: Array
+  },
+  sign : {
+    type: String
+  },
+  isOnline: {
+    type: Boolean,
+    default: true
+  },
   createAt: {
     type: Date,
-    default : Date.now()
+    default : Date.now
   }
 })
 

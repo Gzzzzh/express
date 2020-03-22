@@ -6,32 +6,42 @@ var expressJwt = require('express-jwt');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var loginRouter = require('./routes/login');
+var applyRouter = require('./routes/apply');
 var uploadRouter = require('./routes/upload');
+var friendsRouter = require('./routes/friends');
+var chatRecordsRouter = require('./routes/chatRecords');
 var jwt = require('./service/jwt')
+var sio = require('socket.io')
+const http = require('http')
 
 const mongoose = require('./db/mongoose')
 const db = mongoose()
 
 var app = express();
 
-// //设置跨域访问（设置在所有的请求前面即可）
-// app.all("*", function (req, res, next) {
-//   //设置允许跨域的域名，*代表允许任意域名跨域
-//   res.header("Access-Control-Allow-Origin", "*");
-//   //允许的header类型
-//   res.header("Access-Control-Allow-Headers", "*");
-//   //跨域允许的请求方式 
-//   res.header("Access-Control-Allow-Methods", "DELETE,PUT,POST,GET,OPTIONS");
-//   if (req.method == 'OPTIONS')
-//     res.sendStatus(200); //让options尝试请求快速结束
-//   else
-//       next();
-// });
+//设置跨域访问（设置在所有的请求前面即可）
+app.all("*", function (req, res, next) {
+  //设置允许跨域的域名，*代表允许任意域名跨域
+  res.header("Access-Control-Allow-Origin", "*");
+  //允许的header类型
+  res.header("Access-Control-Allow-Headers", "*");
+  //跨域允许的请求方式 
+  res.header("Access-Control-Allow-Methods", "DELETE,PUT,POST,GET,OPTIONS");
+  if (req.method == 'OPTIONS')
+    res.sendStatus(200); //让options尝试请求快速结束
+  else
+      next();
+});
 
 // 解析token获取信息
 app.use(async function(req, res, next) {
   const token = req.headers['token']
   if(!token) {
+    if (req.path === '/login/login') next()
+    else res.json({
+      code: 1000,
+      msg: 'empty token'
+    })
     next();
   }
   else {
@@ -63,12 +73,30 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/login', loginRouter);
 app.use('/upload', uploadRouter);
+app.use('/apply', applyRouter);
+app.use('/friends', friendsRouter);
+app.use('/chatRecords', chatRecordsRouter);
 
 // error handler
 app.use(function(err, req, res, next) {
   if(err.name === 'UnauthorizedError') return res.status(401).json({
-    msg: 'token失效'
+    msg: 'token错误'
   })
 });
 
-module.exports = app;
+app.use(function (req, res, next) {
+  // 这里必须是Response响应的定时器【20秒】
+  res.setTimeout(20*1000, function () {
+      return res.status(408).send("请求超时")
+  })
+  next()
+})
+
+
+var server = http.createServer(app);
+const io = sio(server)
+require('./service/chatSocket')(io)
+
+module.exports = {
+  server
+};

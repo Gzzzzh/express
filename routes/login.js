@@ -9,18 +9,16 @@ router.post('/login', async function(req, res, next) {
   const {phone, code, nickName, gender, avatarUrl} = req.body
   if(!code || !phone || !nickName || !gender || !avatarUrl ) return res.sendStatus(500)
   const loginRes = await wx.code2Session(code)
-  console.log('loginRes', loginRes);
   if (loginRes.errcode) {
     return res.json({
       code: 200,
       msg: loginRes.errmsg
     })
   } else {
-    // 存手机和openid进数据库
+    var params = { openId: loginRes.openid, phone, nickName, gender, avatarUrl }
     Users.findOne({ openId: loginRes.openid }, async (err, data) => {
       if (err || data === null) {
         console.log('没有注册');
-        var params = { openId: loginRes.openid, phone, nickName, gender, avatarUrl }
         const user = new Users(params)
         await user.save()
       }
