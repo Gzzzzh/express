@@ -10,6 +10,7 @@ var applyRouter = require('./routes/apply');
 var uploadRouter = require('./routes/upload');
 var friendsRouter = require('./routes/friends');
 var chatRecordsRouter = require('./routes/chatRecords');
+var circleRouter = require('./routes/circles');
 var jwt = require('./service/jwt')
 var sio = require('socket.io')
 const http = require('http')
@@ -33,16 +34,21 @@ app.all("*", function (req, res, next) {
       next();
 });
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ entend:true }));
+
+
 // 解析token获取信息
 app.use(async function(req, res, next) {
   const token = req.headers['token']
   if(!token) {
-    if (req.path === '/login/login') next()
+    if (req.path === '/login/login') {
+      next()
+    }
     else res.json({
       code: 1000,
       msg: 'empty token'
     })
-    next();
   }
   else {
    const info = await jwt.verToken(token)
@@ -61,8 +67,7 @@ app.use(expressJwt({
   path: ['/login/login']
 }))
 
-app.use(bodyParser.urlencoded({ entend:false }));
-app.use(bodyParser.json());
+
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -76,6 +81,7 @@ app.use('/upload', uploadRouter);
 app.use('/apply', applyRouter);
 app.use('/friends', friendsRouter);
 app.use('/chatRecords', chatRecordsRouter);
+app.use('/circles', circleRouter);
 
 // error handler
 app.use(function(err, req, res, next) {

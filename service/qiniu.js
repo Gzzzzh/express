@@ -6,7 +6,7 @@ const secretKey = '9GMKkGmfif-B2Qi05aCxevsuHRPPKwcRmioC5C2V'
 const mac = new qiniu.auth.digest.Mac(accessKey, secretKey)
 const option = {
   scope: 'gzh19970716',
-  expires: 7200
+  expires: 72000
 }
 
 const putPolicy = new qiniu.rs.PutPolicy(option)
